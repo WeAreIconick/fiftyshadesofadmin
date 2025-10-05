@@ -3,15 +3,35 @@
  * Plugin Name: Fifty Shades of Admin
  * Plugin URI: https://iconick.io
  * Description: Turn your boring admin into a colorful masterpiece! Pick a color, we'll do the math. Warning: Side effects may include actually enjoying WordPress admin work.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Iconick
  * License: GPL v2 or later
+ * Text Domain: fifty-shades-of-admin
+ * Domain Path: /languages
+ * Requires at least: 5.0
+ * Tested up to: 6.4
+ * Requires PHP: 7.4
  */
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
+
+// Check WordPress and PHP version compatibility
+if (version_compare(get_bloginfo('version'), '5.0', '<') || version_compare(PHP_VERSION, '7.4', '<')) {
+    add_action('admin_notices', function() {
+        echo '<div class="error"><p>' . 
+             __('Fifty Shades of Admin requires WordPress 5.0+ and PHP 7.4+. Please upgrade.', 'fifty-shades-of-admin') . 
+             '</p></div>';
+    });
+    return;
+}
+
+// Load plugin text domain
+add_action('plugins_loaded', function() {
+    load_plugin_textdomain('fifty-shades-of-admin', false, dirname(plugin_basename(__FILE__)) . '/languages');
+});
 
 class FiftyShadesOfAdmin {
     
@@ -47,7 +67,7 @@ class FiftyShadesOfAdmin {
         // Register the color scheme with WordPress
         wp_admin_css_color(
             'fifty_shades_custom',
-            'Fifty Shades',
+            __('Fifty Shades', 'fifty-shades-of-admin'),
             '', // No external CSS file - we handle it inline
             array($colors['dark'], $colors['secondary'], $colors['primary'], $colors['accent']),
             array(
@@ -90,72 +110,13 @@ class FiftyShadesOfAdmin {
                 }
             });
         });
-            
-            // Handle the Apply button click
-            $('#fifty-shades-apply').click(function(e) {
-                e.preventDefault();
-                
-                var selectedColor = $('#fifty-shades-base-color').val();
-                var button = $(this);
-                
-                // Disable button and show loading
-                button.prop('disabled', true).text('Applying...');
-                
-                // First, set the admin color scheme to our custom one
-                $('input[name="admin_color"][value="fifty_shades_custom"]').prop('checked', true);
-                
-                // Send AJAX request to save the color
-                $.ajax({
-                    url: ajaxurl,
-                    type: 'POST',
-                    data: {
-                        action: 'fifty_shades_update_color',
-                        color: selectedColor,
-                        admin_color: 'fifty_shades_custom',
-                        nonce: '<?php echo wp_create_nonce('fifty_shades_nonce'); ?>'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            // Show success message without refreshing
-                            button.text('Applied!').css('background-color', '#28a745');
-                            
-                            // Reset button after 2 seconds
-                            setTimeout(function() {
-                                button.prop('disabled', false).text('Apply Color').css('background-color', '');
-                            }, 2000);
-                        } else {
-                            alert('Error saving color: ' + (response.data || 'Unknown error'));
-                            button.prop('disabled', false).text('Apply Color');
-                        }
-                    },
-                    error: function() {
-                        alert('Error communicating with server');
-                        button.prop('disabled', false).text('Apply Color');
-                    }
-                });
-                    success: function(response) {
-                        if (response.success) {
-                            // Force page refresh
-                            window.location.reload();
-                        } else {
-                            alert('Error saving color: ' + (response.data || 'Unknown error'));
-                            button.prop('disabled', false).text('Apply Color');
-                        }
-                    },
-                    error: function() {
-                        alert('Error communicating with server');
-                        button.prop('disabled', false).text('Apply Color');
-                    }
-                });
-            });
-        });
         </script>
         
         <div id="fifty-shades-section">
-            <h2>Fifty Shades Color Customization</h2>
+            <h2><?php _e('Fifty Shades Color Customization', 'fifty-shades-of-admin'); ?></h2>
             <table class="form-table" role="presentation">
                 <tr id="fifty-shades-controls">
-                    <th scope="row">Choose Your Color</th>
+                    <th scope="row"><?php _e('Choose Your Color', 'fifty-shades-of-admin'); ?></th>
                     <td>
                         <form method="post" id="fifty-shades-form" style="display: inline-block;">
                             <input type="hidden" name="admin_color" value="fifty_shades_custom">
@@ -166,113 +127,83 @@ class FiftyShadesOfAdmin {
                             <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
                                 <input type="color" name="fifty_shades_base_color" id="fifty-shades-base-color" value="<?php echo esc_attr($base_color); ?>" style="width: 60px; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
                                 
-                                <input type="submit" value="Apply Color" class="button button-primary" style="height: 40px; padding: 0 20px;">
+                                <input type="submit" value="<?php esc_attr_e('Apply Color', 'fifty-shades-of-admin'); ?>" class="button button-primary" style="height: 40px; padding: 0 20px;">
                             </div>
                         </form>
                         
                         <p class="description">
-                            <strong>How it works:</strong> Pick any color you like, then click "Apply Color". 
-                            The page will refresh (and show you an annoying error I can't do anything about) and show your new colorful admin theme.
+                            <strong><?php _e('How it works:', 'fifty-shades-of-admin'); ?></strong> <?php _e('Pick any color you like, then click "Apply Color". The page will refresh and show your new colorful admin theme.', 'fifty-shades-of-admin'); ?>
                         </p>
                     </td>
                 </tr>
             </table>
         </div>
         <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var firstTable = document.querySelector('table.form-table');
-            var section = document.getElementById('fifty-shades-section');
-            if (firstTable && section) {
-                firstTable.parentNode.insertBefore(section, firstTable);
-            }
-            
+        jQuery(document).ready(function($) {
             // Convert submit button to regular button for AJAX
-            var submitButton = document.querySelector('#fifty-shades-form input[type="submit"]');
-            if (submitButton) {
+            var $submitButton = $('#fifty-shades-form input[type="submit"]');
+            if ($submitButton.length) {
                 // Change to regular button
-                submitButton.type = 'button';
+                $submitButton.attr('type', 'button');
                 
-                submitButton.addEventListener('click', function() {
-                    var colorValue = document.getElementById('fifty-shades-base-color').value;
+                $submitButton.on('click', function(e) {
+                    e.preventDefault();
                     
-                    // Disable button
-                    submitButton.disabled = true;
-                    submitButton.value = 'Applying...';
+                    var colorValue = $('#fifty-shades-base-color').val();
+                    var $button = $(this);
+                    
+                    // Disable button and show loading
+                    $button.prop('disabled', true).val('<?php esc_js(__('Applying...', 'fifty-shades-of-admin')); ?>');
                     
                     // Set the radio button first
-                    var radioButton = document.querySelector('input[name="admin_color"][value="fifty_shades_custom"]');
-                    if (radioButton) {
-                        radioButton.checked = true;
-                    }
+                    $('input[name="admin_color"][value="fifty_shades_custom"]').prop('checked', true);
                     
-                    // Simple XMLHttpRequest
-                    var xhr = new XMLHttpRequest();
-                    var formData = new FormData();
-                    
-                    formData.append('action', 'fifty_shades_update_color');
-                    formData.append('color', colorValue);
-                    formData.append('admin_color', 'fifty_shades_custom');
-                    formData.append('nonce', '<?php echo wp_create_nonce('fifty_shades_nonce'); ?>');
-                    
-                    xhr.open('POST', '<?php echo admin_url('admin-ajax.php'); ?>');
-                    
-                    xhr.onload = function() {
-                        if (xhr.status === 200) {
-                            try {
-                                var response = JSON.parse(xhr.responseText);
-                                if (response.success) {
-                                    // Reset all form fields to their current values to clear "dirty" state
-                                    var allInputs = document.querySelectorAll('input, select, textarea');
-                                    for (var i = 0; i < allInputs.length; i++) {
-                                        if (allInputs[i].type === 'checkbox' || allInputs[i].type === 'radio') {
-                                            allInputs[i].defaultChecked = allInputs[i].checked;
-                                        } else {
-                                            allInputs[i].defaultValue = allInputs[i].value;
-                                        }
+                    // Send AJAX request
+                    $.ajax({
+                        url: ajaxurl,
+                        type: 'POST',
+                        data: {
+                            action: 'fifty_shades_update_color',
+                            color: colorValue,
+                            admin_color: 'fifty_shades_custom',
+                            nonce: '<?php echo wp_create_nonce('fifty_shades_nonce'); ?>'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Reset all form fields to their current values to clear "dirty" state
+                                $('input, select, textarea').each(function() {
+                                    if (this.type === 'checkbox' || this.type === 'radio') {
+                                        this.defaultChecked = this.checked;
+                                    } else {
+                                        this.defaultValue = this.value;
                                     }
-                                    
-                                    // Clear any WordPress change tracking
-                                    if (window.wp && window.wp.heartbeat) {
-                                        window.wp.heartbeat.enqueue('wp_refresh_nonces', false);
-                                    }
-                                    
-                                    // Force clear beforeunload
-                                    window.onbeforeunload = null;
-                                    
-                                    // Show success message instead of refreshing
-                                    applyButton.value = 'Applied!';
-                                    applyButton.style.backgroundColor = '#28a745';
-                                    
-                                    // Reset button after 2 seconds
-                                    setTimeout(function() {
-                                        applyButton.disabled = false;
-                                        applyButton.value = 'Apply Color';
-                                        applyButton.style.backgroundColor = '';
-                                    }, 2000);
-                                } else {
-                                    alert('Error: ' + (response.data || 'Unknown error'));
-                                    applyButton.disabled = false;
-                                    applyButton.value = 'Apply Color';
+                                });
+                                
+                                // Clear any WordPress change tracking
+                                if (window.wp && window.wp.heartbeat) {
+                                    window.wp.heartbeat.enqueue('wp_refresh_nonces', false);
                                 }
-                            } catch (e) {
-                                alert('Invalid response from server');
-                                applyButton.disabled = false;
-                                applyButton.value = 'Apply Color';
+                                
+                                // Force clear beforeunload
+                                window.onbeforeunload = null;
+                                
+                                // Show success message
+                                $button.val('<?php esc_js(__('Applied!', 'fifty-shades-of-admin')); ?>').css('background-color', '#28a745');
+                                
+                                // Reset button after 2 seconds
+                                setTimeout(function() {
+                                    $button.prop('disabled', false).val('<?php esc_js(__('Apply Color', 'fifty-shades-of-admin')); ?>').css('background-color', '');
+                                }, 2000);
+                            } else {
+                                alert('<?php esc_js(__('Error saving color:', 'fifty-shades-of-admin')); ?> ' + (response.data || '<?php esc_js(__('Unknown error', 'fifty-shades-of-admin')); ?>'));
+                                $button.prop('disabled', false).val('<?php esc_js(__('Apply Color', 'fifty-shades-of-admin')); ?>');
                             }
-                        } else {
-                            alert('Server error: ' + xhr.status);
-                            applyButton.disabled = false;
-                            applyButton.value = 'Apply Color';
+                        },
+                        error: function() {
+                            alert('<?php esc_js(__('Error communicating with server', 'fifty-shades-of-admin')); ?>');
+                            $button.prop('disabled', false).val('<?php esc_js(__('Apply Color', 'fifty-shades-of-admin')); ?>');
                         }
-                    };
-                    
-                    xhr.onerror = function() {
-                        alert('Network error');
-                        applyButton.disabled = false;
-                        applyButton.value = 'Apply Color';
-                    };
-                    
-                    xhr.send(formData);
+                    });
                 });
             }
         });
@@ -285,33 +216,54 @@ class FiftyShadesOfAdmin {
      * Handle AJAX color update
      */
     public function ajax_update_color() {
-        // Verify nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'fifty_shades_nonce')) {
-            wp_die('Security check failed');
+        try {
+            // Verify nonce
+            if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'fifty_shades_nonce')) {
+                wp_send_json_error(__('Security check failed', 'fifty-shades-of-admin'));
+                return;
+            }
+            
+            $user_id = get_current_user_id();
+            
+            if (!$user_id || !current_user_can('edit_user', $user_id)) {
+                wp_send_json_error(__('Insufficient permissions', 'fifty-shades-of-admin'));
+                return;
+            }
+            
+            if (!isset($_POST['color']) || !isset($_POST['admin_color'])) {
+                wp_send_json_error(__('Missing required parameters', 'fifty-shades-of-admin'));
+                return;
+            }
+            
+            $color = sanitize_hex_color($_POST['color']);
+            $admin_color = sanitize_text_field($_POST['admin_color']);
+            
+            if (!$color) {
+                wp_send_json_error(__('Invalid color format', 'fifty-shades-of-admin'));
+                return;
+            }
+            
+            if ($admin_color !== 'fifty_shades_custom') {
+                wp_send_json_error(__('Invalid admin color scheme', 'fifty-shades-of-admin'));
+                return;
+            }
+            
+            // Save the color
+            $color_result = update_user_meta($user_id, 'fifty_shades_base_color', $color);
+            
+            // Set the admin color scheme
+            $scheme_result = update_user_meta($user_id, 'admin_color', $admin_color);
+            
+            if ($color_result !== false && $scheme_result !== false) {
+                wp_send_json_success(__('Color updated successfully', 'fifty-shades-of-admin'));
+            } else {
+                wp_send_json_error(__('Failed to save color settings', 'fifty-shades-of-admin'));
+            }
+            
+        } catch (Exception $e) {
+            error_log('Fifty Shades of Admin AJAX Error: ' . $e->getMessage());
+            wp_send_json_error(__('An unexpected error occurred', 'fifty-shades-of-admin'));
         }
-        
-        $user_id = get_current_user_id();
-        
-        if (!current_user_can('edit_user', $user_id)) {
-            wp_send_json_error('Insufficient permissions');
-            return;
-        }
-        
-        $color = sanitize_hex_color($_POST['color']);
-        $admin_color = sanitize_text_field($_POST['admin_color']);
-        
-        if (!$color) {
-            wp_send_json_error('Invalid color format');
-            return;
-        }
-        
-        // Save the color
-        update_user_meta($user_id, 'fifty_shades_base_color', $color);
-        
-        // Set the admin color scheme
-        update_user_meta($user_id, 'admin_color', $admin_color);
-        
-        wp_send_json_success('Color updated successfully');
     }
     
     /**
@@ -323,8 +275,13 @@ class FiftyShadesOfAdmin {
         }
         
         if (isset($_POST['fifty_shades_base_color'])) {
-            update_user_meta($user_id, 'fifty_shades_base_color', sanitize_hex_color($_POST['fifty_shades_base_color']));
+            $color = sanitize_hex_color($_POST['fifty_shades_base_color']);
+            if ($color) {
+                update_user_meta($user_id, 'fifty_shades_base_color', $color);
+            }
         }
+        
+        return true;
     }
     
     /**
@@ -583,6 +540,27 @@ class FiftyShadesOfAdmin {
         return sprintf("#%02x%02x%02x", round($r), round($g), round($b));
     }
 }
+
+// Plugin activation hook
+register_activation_hook(__FILE__, function() {
+    // Check WordPress version
+    if (version_compare(get_bloginfo('version'), '5.0', '<')) {
+        deactivate_plugins(plugin_basename(__FILE__));
+        wp_die(__('Fifty Shades of Admin requires WordPress 5.0 or higher.', 'fifty-shades-of-admin'));
+    }
+    
+    // Check PHP version
+    if (version_compare(PHP_VERSION, '7.4', '<')) {
+        deactivate_plugins(plugin_basename(__FILE__));
+        wp_die(__('Fifty Shades of Admin requires PHP 7.4 or higher.', 'fifty-shades-of-admin'));
+    }
+});
+
+// Plugin deactivation hook
+register_deactivation_hook(__FILE__, function() {
+    // Clear any scheduled events if any
+    wp_clear_scheduled_hook('fifty_shades_cleanup');
+});
 
 // Initialize the plugin
 new FiftyShadesOfAdmin();

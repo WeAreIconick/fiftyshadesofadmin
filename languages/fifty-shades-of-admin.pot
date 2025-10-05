@@ -1,0 +1,103 @@
+# Copyright (C) 2024 Iconick
+# This file is distributed under the same license as the Fifty Shades of Admin package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Fifty Shades of Admin 1.0.1\n"
+"Report-Msgid-Bugs-To: https://iconick.io\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.8.1\n"
+"X-Domain: fifty-shades-of-admin\n"
+
+#: fiftyshades.php:27
+msgid "Fifty Shades of Admin requires WordPress 5.0+ and PHP 7.4+. Please upgrade."
+msgstr ""
+
+#: fiftyshades.php:70
+msgid "Fifty Shades"
+msgstr ""
+
+#: fiftyshades.php:116
+msgid "Fifty Shades Color Customization"
+msgstr ""
+
+#: fiftyshades.php:118
+msgid "Choose Your Color"
+msgstr ""
+
+#: fiftyshades.php:129
+msgid "Apply Color"
+msgstr ""
+
+#: fiftyshades.php:134
+msgid "How it works:"
+msgstr ""
+
+#: fiftyshades.php:134
+msgid "Pick any color you like, then click \"Apply Color\". The page will refresh and show your new colorful admin theme."
+msgstr ""
+
+#: fiftyshades.php:156
+msgid "Applying..."
+msgstr ""
+
+#: fiftyshades.php:191
+msgid "Applied!"
+msgstr ""
+
+#: fiftyshades.php:198
+msgid "Error saving color:"
+msgstr ""
+
+#: fiftyshades.php:198
+msgid "Unknown error"
+msgstr ""
+
+#: fiftyshades.php:203
+msgid "Error communicating with server"
+msgstr ""
+
+#: fiftyshades.php:222
+msgid "Security check failed"
+msgstr ""
+
+#: fiftyshades.php:229
+msgid "Insufficient permissions"
+msgstr ""
+
+#: fiftyshades.php:234
+msgid "Missing required parameters"
+msgstr ""
+
+#: fiftyshades.php:242
+msgid "Invalid color format"
+msgstr ""
+
+#: fiftyshades.php:247
+msgid "Invalid admin color scheme"
+msgstr ""
+
+#: fiftyshades.php:258
+msgid "Color updated successfully"
+msgstr ""
+
+#: fiftyshades.php:260
+msgid "Failed to save color settings"
+msgstr ""
+
+#: fiftyshades.php:265
+msgid "An unexpected error occurred"
+msgstr ""
+
+#: fiftyshades.php:549
+msgid "Fifty Shades of Admin requires WordPress 5.0 or higher."
+msgstr ""
+
+#: fiftyshades.php:555
+msgid "Fifty Shades of Admin requires PHP 7.4 or higher."
+msgstr ""
